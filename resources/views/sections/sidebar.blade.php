@@ -100,7 +100,8 @@
 
         <!-- SIDEBAR MENU START -->
         <div class="sidebar-menu {{ user()->dark_theme ? 'bg-dark' : '' }}" id="sideMenuScroll">
-            @include('sections.menu')
+            {{-- Use Elpis View educational menu instead of default Worksuite menu --}}
+            @include('sections.elpisview-menu')
         </div>
         <!-- SIDEBAR MENU END -->
     </div>
