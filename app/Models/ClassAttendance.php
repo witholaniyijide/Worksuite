@@ -15,6 +15,10 @@ class ClassAttendance extends Model
         'start_time', 'end_time', 'duration_hours', 'student_status',
         'rate_applied', 'amount_earned', 'currency', 'class_notes',
         'topics_covered', 'status', 'approved_by', 'approved_at',
+        'is_stand_in', 'stand_in_reason',
+        'is_late', 'is_late_submission',
+        'is_rescheduled', 'original_scheduled_time', 'reschedule_reason', 'reschedule_notes',
+        'rejection_reason',
     ];
 
     protected $casts = [
@@ -23,6 +27,10 @@ class ClassAttendance extends Model
         'rate_applied' => 'decimal:2',
         'amount_earned' => 'decimal:2',
         'approved_at' => 'datetime',
+        'is_stand_in' => 'boolean',
+        'is_late' => 'boolean',
+        'is_late_submission' => 'boolean',
+        'is_rescheduled' => 'boolean',
     ];
 
     public function tutor(): BelongsTo
@@ -43,6 +51,37 @@ class ClassAttendance extends Model
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Scope to get stand-in attendance records.
+     */
+    public function scopeStandIn($query)
+    {
+        return $query->where('is_stand_in', true);
+    }
+
+    /**
+     * Scope to get late submissions.
+     */
+    public function scopeLate($query)
+    {
+        return $query->where('is_late', true);
+    }
+
+    /**
+     * Get formatted class time range.
+     */
+    public function getClassTimeRangeAttribute(): ?string
+    {
+        if (!$this->start_time || !$this->end_time) {
+            return null;
+        }
+
+        $start = \Carbon\Carbon::parse($this->start_time)->format('g:i A');
+        $end = \Carbon\Carbon::parse($this->end_time)->format('g:i A');
+
+        return "{$start} - {$end}";
     }
 
     /**

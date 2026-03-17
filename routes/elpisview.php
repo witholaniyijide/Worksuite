@@ -32,6 +32,20 @@ Route::middleware(['auth'])->prefix('elpisview')->name('elpisview.')->group(func
     ]);
     Route::post('attendance/{classAttendance}/approve', [ClassAttendanceController::class, 'approve'])
         ->name('attendance.approve');
+    Route::post('attendance/{classAttendance}/reject', [ClassAttendanceController::class, 'reject'])
+        ->name('attendance.reject');
+
+    // Pending attendance approval queue
+    Route::get('attendance-pending', [ClassAttendanceController::class, 'pending'])
+        ->name('attendance.pending');
+
+    // Bulk approve attendance
+    Route::post('attendance-bulk-approve', [ClassAttendanceController::class, 'bulkApprove'])
+        ->name('attendance.bulk-approve');
+
+    // Duplicate check (AJAX)
+    Route::post('attendance-check-duplicate', [ClassAttendanceController::class, 'checkDuplicate'])
+        ->name('attendance.check-duplicate');
 
     // AJAX endpoints for attendance form
     Route::get('ajax/tutor/{tutor}/students', [ClassAttendanceController::class, 'getStudentsByTutor'])
