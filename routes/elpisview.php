@@ -7,26 +7,37 @@ use App\Http\Controllers\ProgressReportController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TutorController;
 use App\Http\Controllers\TutorPayrollController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Director\DirectorDashboardController;
+use App\Http\Controllers\Manager\ManagerDashboardController;
+use App\Http\Controllers\Tutor\TutorDashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Elpis View Educational Portal Routes
 |--------------------------------------------------------------------------
+|
+| School subjects tutoring: Math, English, Chemistry, Physics, Yoruba,
+| French, Coding, Bible Study, IJMB prep. Regions: UK, US, Canada.
+|
 */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared / General Routes (all authenticated users)
+// ─────────────────────────────────────────────────────────────────────────────
 Route::middleware(['auth'])->prefix('elpisview')->name('elpisview.')->group(function () {
 
-    // Dashboard
+    // Default Dashboard (redirects or shows based on role)
     Route::get('/dashboard', [ElpisDashboardController::class, 'index'])->name('dashboard');
 
-    // Students Management
+    // Students Management (Admin/Director full access, others view-only via portals)
     Route::resource('students', StudentController::class);
 
     // Tutors Management
     Route::resource('tutors', TutorController::class);
 
-    // Class Attendance (Tutor submits attendance for students)
+    // Class Attendance
     Route::resource('attendance', ClassAttendanceController::class)->parameters([
         'attendance' => 'classAttendance',
     ]);
@@ -75,7 +86,37 @@ Route::middleware(['auth'])->prefix('elpisview')->name('elpisview.')->group(func
     Route::post('payroll/{tutorPayroll}/approve', [TutorPayrollController::class, 'approve'])->name('payroll.approve');
     Route::post('payroll/{tutorPayroll}/mark-paid', [TutorPayrollController::class, 'markPaid'])->name('payroll.mark-paid');
 
-    // Parent Portal (separate dashboard for parents)
+    // ─────────────────────────────────────────────────────────────────────────
+    // TUTOR PORTAL
+    // ─────────────────────────────────────────────────────────────────────────
+    Route::prefix('tutor-portal')->name('tutor.')->group(function () {
+        Route::get('/dashboard', [TutorDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MANAGER PORTAL (Location-based: UK, US, Canada)
+    // ─────────────────────────────────────────────────────────────────────────
+    Route::prefix('manager-portal')->name('manager.')->group(function () {
+        Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DIRECTOR PORTAL
+    // ─────────────────────────────────────────────────────────────────────────
+    Route::prefix('director-portal')->name('director.')->group(function () {
+        Route::get('/dashboard', [DirectorDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ADMIN PORTAL
+    // ─────────────────────────────────────────────────────────────────────────
+    Route::prefix('admin-portal')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // PARENT PORTAL
+    // ─────────────────────────────────────────────────────────────────────────
     Route::prefix('parent')->name('parent.')->group(function () {
         Route::get('/dashboard', [ParentPortalController::class, 'dashboard'])->name('dashboard');
         Route::get('/student/{studentId}/reports', [ParentPortalController::class, 'studentReports'])
