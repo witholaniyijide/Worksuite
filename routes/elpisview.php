@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\ElpisLoginController;
 use App\Http\Controllers\ClassAttendanceController;
 use App\Http\Controllers\ElpisDashboardController;
 use App\Http\Controllers\ParentPortalController;
@@ -22,6 +23,18 @@ use Illuminate\Support\Facades\Route;
 | French, Coding, Bible Study, IJMB prep. Regions: UK, US, Canada.
 |
 */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Authentication Routes (guests only)
+// ─────────────────────────────────────────────────────────────────────────────
+Route::middleware(['guest'])->prefix('elpisview')->name('elpisview.')->group(function () {
+    Route::get('/login', [ElpisLoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [ElpisLoginController::class, 'login'])->name('login.submit');
+});
+
+Route::middleware(['auth'])->prefix('elpisview')->name('elpisview.')->group(function () {
+    Route::post('/logout', [ElpisLoginController::class, 'logout'])->name('logout');
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared / General Routes (all authenticated users)
