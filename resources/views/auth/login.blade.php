@@ -1,251 +1,361 @@
-<x-auth>
-    <form id="login-form" action="{{ route('login') }}" class="ajax-form" method="POST">
-        {{ csrf_field() }}
-        <h3 class=" mb-4 f-w-500">@lang('app.login')</h3>
+<!doctype html>
+<html lang="en">
 
-        <script>
-            const facebook = "{{ route('social_login', 'facebook') }}";
-            const google = "{{ route('social_login', 'google') }}";
-            const twitter = "{{ route('social_login', 'twitter-oauth-2') }}";
-            const linkedin = "{{ route('social_login', 'linkedin-openid') }}";
-        </script>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Login &mdash; Elpis View Educational Services</title>
 
-        @if ($socialAuthSettings->google_status == 'enable')
-            <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = google;">
-                <span><img src="{{ asset('img/google.png') }}" alt="Google"/></span>
-                @lang('auth.signInGoogle')</a>
-        @endif
-        @if ($socialAuthSettings->facebook_status == 'enable')
-            <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = facebook;">
-                <span><img src="{{ asset('img/fb.png') }}" alt="Google"/></span>
-                @lang('auth.signInFacebook')
-            </a>
-        @endif
-        @if ($socialAuthSettings->twitter_status == 'enable')
-            <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = twitter;">
-                <span><img src="{{ asset('img/twitter.png') }}" alt="Google"/></span>
-                @lang('auth.signInTwitter')
-            </a>
-        @endif
-        @if ($socialAuthSettings->linkedin_status == 'enable')
-            <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = linkedin;">
-                <span><img src="{{ asset('img/linkedin.png') }}" alt="Google"/></span>
-                @lang('auth.signInLinkedin')
-            </a>
-        @endif
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="{{ asset('vendor/css/all.min.css') }}">
 
-        @if ($socialAuthSettings->social_auth_enable)
-            <p class="position-relative my-4">@lang('auth.useEmail')</p>
-        @endif
+    <!-- Template CSS -->
+    <link type="text/css" rel="stylesheet" media="all" href="{{ asset('css/main.css') }}">
 
-        <div class="form-group text-left">
-            <label for="email">@lang('auth.email')</label>
-            <input tabindex="1" type="email" name="email"
-                   class="form-control height-50 f-15 light_text @error('email') is-invalid @enderror"
-                   autofocus
-                   value="{{request()->old('email')}}"
-                   placeholder="@lang('auth.email')" id="email">
-            @if ($errors->has('email'))
-                <div class="invalid-feedback">{{ $errors->first('email') }}</div>
-            @endif
-            @if ($socialAuthSettings->social_auth_enable_count>1)
-                <div class="forgot_pswd mt-2" id="forget-pass-email-section">
-                    <a href="{{ url('forgot-password') }}">@lang('app.forgotPassword')</a>
+    <style>
+        :root {
+            --ev-primary: #4e73df;
+            --ev-primary-dark: #3a5bc7;
+            --ev-bg: #f0f2f5;
+            --ev-card: #ffffff;
+            --ev-text: #344767;
+            --ev-text-light: #7b809a;
+            --ev-border: #e9ecef;
+            --ev-danger: #e74a3b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--ev-bg);
+            color: var(--ev-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ev-login-header {
+            background: var(--ev-card);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--ev-border);
+            box-shadow: 0 1px 3px rgba(0,0,0,.04);
+        }
+
+        .ev-login-header .ev-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--ev-text);
+        }
+
+        .ev-login-header .ev-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--ev-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .ev-login-header .ev-brand-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .ev-login-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+
+        .ev-login-card {
+            background: var(--ev-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.06);
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .ev-login-card h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0 0 6px;
+            text-align: center;
+        }
+
+        .ev-login-card .ev-subtitle {
+            color: var(--ev-text-light);
+            text-align: center;
+            margin-bottom: 28px;
+            font-size: 14px;
+        }
+
+        .ev-form-group {
+            margin-bottom: 20px;
+        }
+
+        .ev-form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--ev-text);
+        }
+
+        .ev-form-control {
+            width: 100%;
+            height: 46px;
+            padding: 0 14px;
+            font-size: 14px;
+            border: 1px solid var(--ev-border);
+            border-radius: 8px;
+            background: #fafbfc;
+            color: var(--ev-text);
+            transition: border-color .2s, box-shadow .2s;
+            outline: none;
+        }
+
+        .ev-form-control:focus {
+            border-color: var(--ev-primary);
+            box-shadow: 0 0 0 3px rgba(78, 115, 223, .15);
+            background: #fff;
+        }
+
+        .ev-form-control.is-invalid {
+            border-color: var(--ev-danger);
+        }
+
+        .ev-invalid-feedback {
+            color: var(--ev-danger);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .ev-password-wrapper {
+            position: relative;
+        }
+
+        .ev-password-wrapper .ev-form-control {
+            padding-right: 44px;
+        }
+
+        .ev-toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--ev-text-light);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 14px;
+        }
+
+        .ev-toggle-password:hover {
+            color: var(--ev-text);
+        }
+
+        .ev-form-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .ev-remember {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--ev-text-light);
+        }
+
+        .ev-remember input {
+            cursor: pointer;
+        }
+
+        .ev-forgot-link {
+            font-size: 13px;
+            color: var(--ev-primary);
+            text-decoration: none;
+        }
+
+        .ev-forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .ev-btn-login {
+            width: 100%;
+            height: 46px;
+            background: var(--ev-primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .ev-btn-login:hover {
+            background: var(--ev-primary-dark);
+        }
+
+        .ev-btn-login:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+        }
+
+        .ev-login-footer {
+            text-align: center;
+            padding: 16px;
+            color: var(--ev-text-light);
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .ev-login-card {
+                padding: 28px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="ev-login-header">
+    <span class="ev-brand">
+        <span class="ev-brand-icon"><i class="fa fa-graduation-cap"></i></span>
+        <span class="ev-brand-name">Elpis View</span>
+    </span>
+</header>
+
+<section class="ev-login-section">
+    <div class="ev-login-card">
+        <h3>Welcome Back</h3>
+        <p class="ev-subtitle">Sign in to your Elpis View portal</p>
+
+        <form method="POST" action="{{ route('login') }}" id="ev-login-form">
+            @csrf
+
+            <div class="ev-form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="ev-form-control @error('email') is-invalid @enderror"
+                    value="{{ old('email') }}"
+                    placeholder="you@example.com"
+                    autofocus
+                    required
+                >
+                @error('email')
+                    <div class="ev-invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="ev-form-group">
+                <label for="password">Password</label>
+                <div class="ev-password-wrapper">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="ev-form-control @error('password') is-invalid @enderror"
+                        placeholder="Enter your password"
+                        required
+                    >
+                    <button type="button" class="ev-toggle-password" title="Show password">
+                        <i class="fa fa-eye"></i>
+                    </button>
                 </div>
-            @endif
-        </div>
-
-        @if ($socialAuthSettings->social_auth_enable_count>1 && !$errors->has('g-recaptcha-response'))
-            <button type="submit" id="submit-next"
-                    class="btn-primary f-w-500 rounded w-100 height-50 f-18"> @lang('auth.next') <i
-                    class="fa fa-arrow-right pl-1"></i></button>
-
-            @if ($company->allow_client_signup)
-                <a href="{{ route('register') }}" id="signup-client-next"
-                   class="btn-secondary f-w-500 rounded w-100 height-50 f-15 mt-3">
-                    @lang('app.signUpAsClient')
-                </a>
-            @endif
-
-        @endif
-
-        <div id="password-section"
-             @if ($socialAuthSettings->social_auth_enable_count > 1 && !$errors->has('g-recaptcha-response')) class="d-none" @endif>
-            <div class="form-group text-left">
-                <label for="password">@lang('app.password')</label>
-                <x-forms.input-group>
-                    <input type="password" name="password" id="password"
-                           placeholder="@lang('placeholders.password')" tabindex="3"
-                           class="form-control height-50 f-15 light_text @error('password') is-invalid @enderror">
-
-                    <x-slot name="append">
-                        <button type="button" data-toggle="tooltip"
-                                data-original-title="@lang('app.viewPassword')"
-                                class="btn btn-outline-secondary border-grey height-50 toggle-password">
-                            <i
-                                class="fa fa-eye"></i></button>
-                    </x-slot>
-
-                </x-forms.input-group>
-                @if ($errors->has('password'))
-                    <div class="invalid-feedback d-block">{{ $errors->first('password') }}</div>
-                @endif
-            </div>
-            <div class="forgot_pswd mb-3">
-                <a href="{{ url('forgot-password') }}">@lang('app.forgotPassword')</a>
+                @error('password')
+                    <div class="ev-invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
-            <div class="form-group text-left ">
-                <input id="checkbox-signup" class="cursor-pointer" type="checkbox" name="remember">
-                <label for="checkbox-signup" class="cursor-pointer">@lang('app.rememberMe')</label>
+            <div class="ev-form-row">
+                <label class="ev-remember">
+                    <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                    Remember me
+                </label>
+                <a href="{{ url('forgot-password') }}" class="ev-forgot-link">Forgot password?</a>
             </div>
 
-            @if ($globalSetting->google_recaptcha_status == 'active')
-                <div class="form-group" id="captcha_container"></div>
-            @endif
+            <input type="hidden" name="locale" value="{{ session()->has('locale') ? session('locale') : 'en' }}">
 
-            <input type="hidden" id="g_recaptcha" name="g_recaptcha">
-
-            @if ($errors->has('g-recaptcha-response'))
-                <div
-                    class="invalid-feedback  d-block text-left">{{ $errors->first('g-recaptcha-response') }}
-                </div>
-            @endif
-
-            <button type="submit" id="submit-login"
-                    class="btn-primary f-w-500 rounded w-100 height-50 f-18">
-                @lang('app.login') <i class="fa fa-arrow-right pl-1"></i>
+            <button type="submit" class="ev-btn-login" id="ev-submit-btn">
+                Sign In <i class="fa fa-arrow-right"></i>
             </button>
+        </form>
+    </div>
+</section>
 
-            @if ($company->allow_client_signup)
-                <a href="{{ route('register') }}"
-                   class="btn-secondary f-w-500 rounded w-100 height-50 f-15 mt-3">
-                    @lang('app.signUpAsClient')
-                </a>
-            @endif
-        </div>
+<footer class="ev-login-footer">
+    &copy; {{ date('Y') }} Elpis View Educational Services. All rights reserved.
+</footer>
 
-        <input type="hidden" name="locale" value="{{ session()->has('locale') ? session('locale') : global_setting()->locale }}">
-        <input type="hidden" id="current-latitude" name="current_latitude">
-        <input type="hidden" id="current-longitude" name="current_longitude">
-    </form>
+<script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('js/main.js') }}"></script>
+<script>
+    $(document).ready(function () {
+        // Toggle password visibility
+        $('.ev-toggle-password').on('click', function () {
+            var input = $(this).siblings('input');
+            var icon = $(this).find('i');
+            if (input.attr('type') === 'password') {
+                input.attr('type', 'text');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                input.attr('type', 'password');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
 
-    <x-slot name="scripts">
+        // Disable button on submit to prevent double-submit
+        $('#ev-login-form').on('submit', function () {
+            var btn = $('#ev-submit-btn');
+            btn.prop('disabled', true);
+            btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Signing in...');
+        });
 
-        <script>
-            @if (isWorksuite() && ($company->attendance_status == 'active' && ($company->attendance_setting->radius_check == 'yes' || $company->attendance_setting->save_current_location == 'yes') ))
-                function setCurrentLocation() {
-                    const currentLatitude = document.getElementById("current-latitude");
-                    const currentLongitude = document.getElementById("current-longitude");
-
-                    function getLocation() {
-                        if (navigator.geolocation) {
-                            navigator.geolocation.getCurrentPosition(showPosition);
-                        }
-                    }
-
-                    function showPosition(position) {
-                        currentLatitude.value = position.coords.latitude;
-                        currentLongitude.value = position.coords.longitude;
-                    }
-                    getLocation();
-
-                }
-                setCurrentLocation();
-            @endif
-        </script>
-
-        @if ($globalSetting->google_recaptcha_status == 'active' && $globalSetting->google_recaptcha_v2_status == 'active')
-            <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async
-                    defer></script>
-            <script>
-                var gcv3;
-                var onloadCallback = function () {
-                    // Renders the HTML element with id 'captcha_container' as a reCAPTCHA widget.
-                    // The id of the reCAPTCHA widget is assigned to 'gcv3'.
-                    gcv3 = grecaptcha.render('captcha_container', {
-                        'sitekey': '{{ $globalSetting->google_recaptcha_v2_site_key }}',
-                        'theme': 'light',
-                        'callback': function (response) {
-                            if (response) {
-                                $('#g_recaptcha').val(response);
-                            }
-                        },
-                    });
-                };
-            </script>
+        @if (session('message'))
+        Swal.fire({
+            icon: 'error',
+            text: '{{ session("message") }}',
+            showConfirmButton: true,
+            customClass: {
+                confirmButton: 'btn btn-primary',
+            },
+            showClass: {
+                popup: 'swal2-noanimation',
+                backdrop: 'swal2-noanimation'
+            },
+        });
         @endif
-        @if ($globalSetting->google_recaptcha_status == 'active' && $globalSetting->google_recaptcha_v3_status == 'active')
-            <script
-                src="https://www.google.com/recaptcha/api.js?render={{ $globalSetting->google_recaptcha_v3_site_key }}"></script>
-            <script>
-                grecaptcha.ready(function () {
-                    grecaptcha.execute('{{ $globalSetting->google_recaptcha_v3_site_key }}').then(function (token) {
-                        // Add your logic to submit to your backend server here.
-                        $('#g_recaptcha').val(token);
-                    });
-                });
-            </script>
-        @endif
+    });
+</script>
 
-        <script>
-
-            $(document).ready(function () {
-
-                $("form#login-form").submit(function () {
-                    const button = $('form#login-form').find('#submit-login');
-
-                    const text = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> {{__('app.loading')}}';
-
-                    button.prop("disabled", true);
-                    button.html(text);
-                });
-
-                function handleFormSubmit(e) {
-                    e.preventDefault();
-                }
-
-                $('#submit-next').click(function (event) {
-                    event.preventDefault();
-                    document.addEventListener('click', handleFormSubmit, false);
-
-                    const url = "{{ route('check_email') }}";
-                    $.easyAjax({
-                        url: url,
-                        container: '#login-form',
-                        disableButton: true,
-                        buttonSelector: "#submit-next",
-                        type: "POST",
-                        data: $('#login-form').serialize(),
-                        success: function (response) {
-                            if (response.status === 'success') {
-                                $('#submit-next, #signup-client-next').remove();
-                                $('#password-section').removeClass('d-none');
-                                $('#forget-pass-email-section').remove();
-                                $("#password").focus();
-                                document.removeEventListener('click', handleFormSubmit);
-                            }
-                        }
-                    })
-                });
-
-                @if (session('message'))
-                Swal.fire({
-                    icon: 'error',
-                    text: '{{ session('message') }}',
-                    showConfirmButton: true,
-                    customClass: {
-                        confirmButton: 'btn btn-primary',
-                    },
-                    showClass: {
-                        popup: 'swal2-noanimation',
-                        backdrop: 'swal2-noanimation'
-                    },
-                })
-                @endif
-
-            });
-        </script>
-    </x-slot>
-
-</x-auth>
+</body>
+</html>
